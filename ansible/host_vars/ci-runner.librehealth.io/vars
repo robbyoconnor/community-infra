@@ -1,23 +1,21 @@
 ---
-gitlab_runner_registration_token: '{{ vault_gitlab_ci_token }}'
-gitlab_runner_concurrent: 2
+# gitlab_runner_registration_token:
+gitlab_runner_concurrent: 3
 gitlab_check_interval: 3
 gitlab_runner_container_install: true
 gitlab_runner_container_image: gitlab/gitlab-runner
 gitlab_runner_container_tag: latest
 gitlab_runner_container_name: gitlab-runner
 gitlab_runner_container_restart_policy: unless-stopped
-
+gitlab_runner_container_mount_path: "/data"
 
 # A list of runners to register and configure
 gitlab_runner_runners:
-    # The identifier of the runner.
   - name: '{{ ansible_hostname }}'
-    # set to 'absent' if you want to delete the runner. Defaults to 'present'.
+    token: '{{ vault_gitlab_ci_token}}'
     state: present
     # The executor used by the runner.
     executor: 'docker'
-    # Set maximum build log size in kilobytes.
     output_limit: 4096
     # Maximum number of jobs to run concurrently on this specific runner.
     # Defaults to 0, simply means don't limit.
@@ -42,17 +40,11 @@ gitlab_runner_runners:
     docker_volumes:
         - "/var/run/docker.sock:/var/run/docker.sock"
         - "/cache"
-    extra_configs:
     runners.docker:
-      memory: 512m
+      memory: 1024m
       allowed_images: ["ruby:*", "node:*", "python:*", "php:*", "java:*"]
       runners.docker.sysctls:
         net.ipv4.ip_forward: "1"
-
-
-
-
-
 
 
 
