@@ -2,6 +2,24 @@
 # -*- mode: yaml -*-
 # vscode: language yaml
 ---
+
+ufw_rules:
+  viewer:
+    port: 3000
+    proto: tcp
+    rule: allow
+
+datadog_checks:
+  nginx:
+    init_config:
+    instances:
+      - nginx_status_url: https://127.0.0.1/nginx_status/
+        ssl_validation: False
+        tags:
+          - instance:radiology
+datadog_config:
+  tags: "provider:osuosl,location:or,service:radiology,ansible:full,provisioner:terraform"
+
 users:
  ivange94:
    comment: Ivange Larry
@@ -198,19 +216,3 @@ nginx_vhosts:
         proxy_redirect off;
       }
 
-ufw_rules:
-  viewer:
-    port: 3000
-    proto: tcp
-    rule: allow
-
-datadog_checks:
-  nginx:
-    init_config:
-    instances:
-      - nginx_status_url: https://127.0.0.1/nginx_status/
-        ssl_validation: False
-        tags:
-          - instance:radiology
-datadog_config:
-  tags: "provider:osuosl,location:or,service:radiology,ansible:full,provisioner:terraform"

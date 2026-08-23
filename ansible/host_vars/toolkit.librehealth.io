@@ -5,6 +5,18 @@
 
 letsencrypt_domain: toolkit.librehealth.io
 
+datadog_checks:
+  nginx:
+    init_config:
+    instances:
+      - nginx_status_url: https://localhost/nginx_status/
+        ssl_validation: False
+        tags:
+          - instance:toolkit
+
+datadog_config:
+  tags: "provider:osuosl,location:or,service:toolkit,ansible:full,provisioner:terraform"
+
 nginx_vhosts:
   - listen: "80 default_server"
     server_name: "toolkit.librehealth.io"
@@ -67,14 +79,3 @@ nginx_vhosts:
         deny all;
       }
 
-datadog_checks:
-  nginx:
-    init_config:
-    instances:
-      - nginx_status_url: https://localhost/nginx_status/
-        ssl_validation: False
-        tags:
-          - instance:toolkit
-
-datadog_config:
-  tags: "provider:osuosl,location:or,service:toolkit,ansible:full,provisioner:terraform"
