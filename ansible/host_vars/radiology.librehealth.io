@@ -17,8 +17,16 @@ letsencrypt_domain: radiology.librehealth.io,viewer.radiology.librehealth.io
 nginx_vhosts:
   - listen: "80 default_server"
     server_name: "radiology.librehealth.io"
-    return: "301 https://$host$request_uri"
     filename: "radiology.librehealth.io.80.conf"
+    extra_parameters: |
+      location ^~ /.well-known/acme-challenge/ {
+        root /usr/share/nginx/html;
+        try_files $uri =404;
+      }
+      location / {
+        return 301 https://$host$request_uri;
+      }
+
   - listen: "443 ssl http2 default_server"
     server_name: "radiology.librehealth.io"
     access_log: "/var/log/nginx/radiology_access.log"
@@ -55,7 +63,7 @@ nginx_vhosts:
           add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS';
           add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type, Authorization';
         }
-      if ($request_method = 'PUT') {
+        if ($request_method = 'PUT') {
           add_header 'Access-Control-Allow-Origin' '*';
           add_header 'Access-Control-Allow-Credentials' 'true';
           add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS';
@@ -66,7 +74,6 @@ nginx_vhosts:
           add_header 'Access-Control-Allow-Credentials' 'true';
           add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS';
           add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type, Authorization';
-
         }
         if ($request_method = 'PATCH') {
           add_header 'Access-Control-Allow-Origin' '*';
@@ -74,7 +81,6 @@ nginx_vhosts:
           add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS';
           add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type, Authorization';
         }
-
         if ($request_method = 'GET') {
           add_header 'Access-Control-Allow-Origin' '*';
           add_header 'Access-Control-Allow-Credentials' 'true';
@@ -87,7 +93,8 @@ nginx_vhosts:
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_pass http://127.0.0.1:8080/;
       }
-      location  /orthanc/  {
+
+      location /orthanc/ {
         proxy_pass http://127.0.0.1:8042;
         proxy_set_header HOST $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -97,25 +104,31 @@ nginx_vhosts:
         add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
         add_header 'Access-Control-Allow-Origin' '*';
       }
+
       location /nginx_status {
-          stub_status on;
-          access_log off;
-          allow 127.0.0.1;
-          allow ::1;
-          deny all;
+        stub_status on;
+        access_log off;
+        allow 127.0.0.1;
+        allow ::1;
+        deny all;
       }
 
-      location ^~ /.well-known/acme-challenge/ {
-        root /usr/share/nginx/html;
-      }
   - listen: "80"
     server_name: "viewer.radiology.librehealth.io"
-    return: "301 https://$host$request_uri"
     filename: "viewer.radiology.librehealth.io.80.conf"
+    extra_parameters: |
+      location ^~ /.well-known/acme-challenge/ {
+        root /usr/share/nginx/html;
+        try_files $uri =404;
+      }
+      location / {
+        return 301 https://$host$request_uri;
+      }
+
   - listen: "443 ssl http2"
     server_name: "viewer.radiology.librehealth.io"
     access_log: "/var/log/nginx/radiology_viewer_access.log"
-    error_log: "/var/log/nginx/radiology_viewer_error.log"
+    error_log: "/var/log/nginx/radiology_error.log"
     root: "/usr/share/nginx/html"
     index: "index.html index.htm"
     extra_parameters: |
@@ -148,7 +161,7 @@ nginx_vhosts:
           add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS';
           add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type, Authorization';
         }
-      if ($request_method = 'PUT') {
+        if ($request_method = 'PUT') {
           add_header 'Access-Control-Allow-Origin' '*';
           add_header 'Access-Control-Allow-Credentials' 'true';
           add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS';
@@ -159,7 +172,6 @@ nginx_vhosts:
           add_header 'Access-Control-Allow-Credentials' 'true';
           add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS';
           add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type, Authorization';
-
         }
         if ($request_method = 'PATCH') {
           add_header 'Access-Control-Allow-Origin' '*';
@@ -167,7 +179,6 @@ nginx_vhosts:
           add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS';
           add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type, Authorization';
         }
-
         if ($request_method = 'GET') {
           add_header 'Access-Control-Allow-Origin' '*';
           add_header 'Access-Control-Allow-Credentials' 'true';
@@ -186,7 +197,6 @@ nginx_vhosts:
         proxy_set_header X-Nginx-Proxy true;
         proxy_redirect off;
       }
-
 
 ufw_rules:
   viewer:
